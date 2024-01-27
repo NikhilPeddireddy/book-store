@@ -1,23 +1,42 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import BookList from './components/BookList';
+import BookDetails from './components/BookDetails';
+import SearchBar from './components/SearchBar';
 
 function App() {
+  const [books, setBooks] = useState([]);
+  const [selectedBook, setSelectedBook] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response1 = await axios.get('https://www.googleapis.com/books/v1/volumes?q=harry+potter');
+        const response2 = await axios.get('https://www.googleapis.com/books/v1/volumes?q=sherlock+holmes');
+
+        const combinedBooks = [...response1.data.items, ...response2.data.items];
+
+        setBooks(combinedBooks);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleBookClick = (book) => {
+    setSelectedBook(book);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <SearchBar setBooks={setBooks} />
+      {selectedBook ? (
+        <BookDetails book={selectedBook} />
+      ) : (
+        <BookList books={books} onBookClick={handleBookClick} />
+      )}
     </div>
   );
 }
